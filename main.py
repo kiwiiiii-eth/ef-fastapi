@@ -31,6 +31,19 @@ app.include_router(taipower.router, tags=["台電資料"])
 app.include_router(upload.router, tags=["樹莓派上傳"])
 
 
+from utils.db import init_db_pool, close_db_pool
+
+@app.on_event("startup")
+def startup_event():
+    """應用程式啟動時初始化資料庫連線池"""
+    init_db_pool()
+
+@app.on_event("shutdown")
+def shutdown_event():
+    """應用程式關閉時釋放資料庫連線池"""
+    close_db_pool()
+
+
 @app.get("/")
 def read_root():
     """
