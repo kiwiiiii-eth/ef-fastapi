@@ -2,12 +2,13 @@
 VPP 查詢端點
 提供虛擬電廠系統查詢即時和歷史數據的 API（FastAPI 版本）
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from config import Config
 from models import SolarDataModel, LoadDataModel
 from utils.db import execute_query, row_to_dict
+from auth import verify_token
 
 router = APIRouter()
 
@@ -178,7 +179,8 @@ def get_solar_history(
     site_id: str = Query(..., description="場站識別碼（必填）"),
     start_date: Optional[str] = Query(None, description="起始日期 (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="結束日期 (YYYY-MM-DD)"),
-    limit: int = Query(500, description="限制筆數", ge=1, le=2000)
+    limit: int = Query(500, description="限制筆數", ge=1, le=2000),
+    token: str = Depends(verify_token)
 ) -> Dict[str, Any]:
     """
     查詢太陽能歷史數據
@@ -280,7 +282,8 @@ def get_load_history(
     site_id: str = Query(..., description="場站識別碼（必填）"),
     start_date: Optional[str] = Query(None, description="起始日期 (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="結束日期 (YYYY-MM-DD)"),
-    limit: int = Query(500, description="限制筆數", ge=1, le=2000)
+    limit: int = Query(500, description="限制筆數", ge=1, le=2000),
+    token: str = Depends(verify_token)
 ) -> Dict[str, Any]:
     """
     查詢負載歷史數據

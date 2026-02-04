@@ -2,10 +2,13 @@
 FastAPI 虛擬電廠 (VPP) 系統主應用程式
 提供太陽能、負載、台電備轉資料查詢 API
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from routers import vpp, taipower, upload
 import os
+import time
+from collections import defaultdict
+import threading
 
 # 建立 FastAPI 應用
 app = FastAPI(
@@ -15,6 +18,53 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# 速率限制器
+class RateLimiter:
+    def __init__(self, requests_per_minute=30):
+        self.requests_per_minute = requests_per_minute
+        self.requests = defaultdict(list)
+        self.lock = threading.Lock()
+
+    def is_allowed(self, client_ip: str, path: str) -> bool:
+        """檢查是否允許請求"""
+        now = time.time()
+        key = f"{client_ip}:{path}"
+
+        with self.lock:
+            # 清除 60 秒前的請求記錄
+            self.requests[key] = [req_time for req_time in self.requests[key] if now - req_time < 60]
+
+            # 檢查是否超過限制
+            if len(self.requests[key]) >= self.requests_per_minute:
+                return False
+
+            # 記錄本次請求
+            self.requests[key].append(now)
+            return True
+
+rate_limiter = RateLimiter(requests_per_minute=30)  # 每分鐘最多 30 個請求
+
+# 速率限制中介軟體
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    # 只對 API 端點進行速率限制
+    if request.url.path.startswith("/api/"):
+        client_ip = request.client.host
+
+        if not rate_limiter.is_allowed(client_ip, request.url.path):
+            raise HTTPException(
+                status_code=429,
+                detail="請求過於頻繁，請稍後再試（每分鐘最多 30 個請求）"
+            )
+
+    response = await call_next(request)
+
+    # 為歷史查詢 API 加上快取標頭
+    if "/history" in request.url.path:
+        response.headers["Cache-Control"] = "public, max-age=30"  # 快取 30 秒
+
+    return response
 
 # 設定 CORS
 app.add_middleware(
