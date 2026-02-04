@@ -178,7 +178,7 @@ def get_solar_history(
     site_id: str = Query(..., description="場站識別碼（必填）"),
     start_date: Optional[str] = Query(None, description="起始日期 (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="結束日期 (YYYY-MM-DD)"),
-    limit: int = Query(1000, description="限制筆數", ge=1, le=10000)
+    limit: int = Query(500, description="限制筆數", ge=1, le=2000)
 ) -> Dict[str, Any]:
     """
     查詢太陽能歷史數據
@@ -280,7 +280,7 @@ def get_load_history(
     site_id: str = Query(..., description="場站識別碼（必填）"),
     start_date: Optional[str] = Query(None, description="起始日期 (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="結束日期 (YYYY-MM-DD)"),
-    limit: int = Query(1000, description="限制筆數", ge=1, le=10000)
+    limit: int = Query(500, description="限制筆數", ge=1, le=2000)
 ) -> Dict[str, Any]:
     """
     查詢負載歷史數據

@@ -120,7 +120,7 @@ def get_reserve_by_date(
 def get_reserve_history(
     start_date: Optional[str] = Query(None, description="起始日期 (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="結束日期 (YYYY-MM-DD)"),
-    limit: int = Query(1000, description="限制筆數", ge=1, le=10000)
+    limit: int = Query(500, description="限制筆數", ge=1, le=2000)
 ) -> Dict[str, Any]:
     """
     查詢歷史備轉資料

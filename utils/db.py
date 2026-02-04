@@ -28,7 +28,9 @@ def init_db_pool():
             user=Config.POSTGRES_USER,
             password=Config.POSTGRES_PASSWORD,
             dbname=Config.POSTGRES_DATABASE,
-            port=Config.POSTGRES_PORT
+            port=Config.POSTGRES_PORT,
+            connect_timeout=10,  # 連線超時 10 秒
+            options='-c statement_timeout=30000'  # SQL 查詢超時 30 秒
         )
         logger.info("資料庫連線池初始化成功")
     except Exception as e:
