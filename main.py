@@ -45,18 +45,20 @@ class RateLimiter:
 
 rate_limiter = RateLimiter(requests_per_minute=30)  # 每分鐘最多 30 個請求
 
-# 速率限制中介軟體
+# 速率限制中介軟體（目前停用，因為前端透過內網都是同一個 IP）
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
-    # 只對 API 端點進行速率限制
-    if request.url.path.startswith("/api/"):
-        client_ip = request.client.host
+    # 暫時停用速率限制
+    # 原因：前端透過 Zeabur 內網請求，所有請求都來自 10.42.0.1
+    # 會誤判為同一個使用者而被限制
 
-        if not rate_limiter.is_allowed(client_ip, request.url.path):
-            raise HTTPException(
-                status_code=429,
-                detail="請求過於頻繁，請稍後再試（每分鐘最多 30 個請求）"
-            )
+    # if request.url.path.startswith("/api/"):
+    #     client_ip = request.client.host
+    #     if not rate_limiter.is_allowed(client_ip, request.url.path):
+    #         raise HTTPException(
+    #             status_code=429,
+    #             detail="請求過於頻繁，請稍後再試（每分鐘最多 30 個請求）"
+    #         )
 
     response = await call_next(request)
 
