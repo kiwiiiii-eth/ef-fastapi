@@ -2,12 +2,13 @@
 台電備轉資料查詢端點
 提供台電電力交易平台備轉容量與價格資料的 API（FastAPI 版本）
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from datetime import datetime, timedelta, date
 from typing import Optional, Dict, Any, List
 from config import Config
 from models import TaipowerReserveModel
 from utils.db import execute_query
+from auth import verify_token
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def row_to_dict(row):
 
 
 @router.get('/api/taipower/reserve/latest')
-def get_latest_reserve() -> Dict[str, Any]:
+def get_latest_reserve(token: str = Depends(verify_token)) -> Dict[str, Any]:
     """
     查詢最新一天的備轉資料 (24 筆)
 
@@ -64,7 +65,8 @@ def get_latest_reserve() -> Dict[str, Any]:
 
 @router.get('/api/taipower/reserve/date')
 def get_reserve_by_date(
-    date: str = Query(..., description="日期 (YYYY-MM-DD)")
+    date: str = Query(..., description="日期 (YYYY-MM-DD)"),
+    token: str = Depends(verify_token)
 ) -> Dict[str, Any]:
     """
     查詢特定日期的備轉資料
@@ -120,7 +122,8 @@ def get_reserve_by_date(
 def get_reserve_history(
     start_date: Optional[str] = Query(None, description="起始日期 (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="結束日期 (YYYY-MM-DD)"),
-    limit: int = Query(500, description="限制筆數", ge=1, le=2000)
+    limit: int = Query(500, description="限制筆數", ge=1, le=2000),
+    token: str = Depends(verify_token)
 ) -> Dict[str, Any]:
     """
     查詢歷史備轉資料
@@ -174,7 +177,8 @@ def get_reserve_history(
 
 @router.get('/api/taipower/reserve/statistics')
 def get_reserve_statistics(
-    date: Optional[str] = Query(None, description="日期 (YYYY-MM-DD)，預設為今天")
+    date: Optional[str] = Query(None, description="日期 (YYYY-MM-DD)，預設為今天"),
+    token: str = Depends(verify_token)
 ) -> Dict[str, Any]:
     """
     查詢特定日期的統計資訊
@@ -253,7 +257,8 @@ def get_reserve_statistics(
 @router.get('/api/taipower/reserve/hour')
 def get_reserve_by_hour(
     date: str = Query(..., description="日期 (YYYY-MM-DD)"),
-    hour: int = Query(..., description="時段 (0-23)", ge=0, le=23)
+    hour: int = Query(..., description="時段 (0-23)", ge=0, le=23),
+    token: str = Depends(verify_token)
 ) -> Dict[str, Any]:
     """
     查詢特定日期和時段的備轉資料

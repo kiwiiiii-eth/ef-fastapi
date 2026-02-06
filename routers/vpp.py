@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.get('/api/vpp/realdata')
-def get_realdata() -> Dict[str, Any]:
+def get_realdata(token: str = Depends(verify_token)) -> Dict[str, Any]:
     """
     查詢所有場站的最新即時數據（太陽能 + 負載）
 
@@ -84,7 +84,7 @@ def get_realdata() -> Dict[str, Any]:
 
 
 @router.get('/api/vpp/realdata/{site_id}')
-def get_site_realdata(site_id: str) -> Dict[str, Any]:
+def get_site_realdata(site_id: str, token: str = Depends(verify_token)) -> Dict[str, Any]:
     """
     查詢特定場站的最新即時數據
 
@@ -138,7 +138,7 @@ def get_site_realdata(site_id: str) -> Dict[str, Any]:
 
 
 @router.get('/api/vpp/solar/latest')
-def get_solar_latest(site_id: Optional[str] = Query(None, description="場站識別碼（可選）")) -> Any:
+def get_solar_latest(site_id: Optional[str] = Query(None, description="場站識別碼（可選）"), token: str = Depends(verify_token)) -> Any:
     """
     查詢最新太陽能數據
 
@@ -241,7 +241,7 @@ def get_solar_history(
 
 
 @router.get('/api/vpp/load/latest')
-def get_load_latest(site_id: Optional[str] = Query(None, description="場站識別碼（可選）")) -> Any:
+def get_load_latest(site_id: Optional[str] = Query(None, description="場站識別碼（可選）"), token: str = Depends(verify_token)) -> Any:
     """
     查詢最新負載數據
 
@@ -344,7 +344,7 @@ def get_load_history(
 
 
 @router.get('/api/vpp/summary')
-def get_summary() -> Dict[str, Any]:
+def get_summary(token: str = Depends(verify_token)) -> Dict[str, Any]:
     """
     查詢彙總統計資訊
 
